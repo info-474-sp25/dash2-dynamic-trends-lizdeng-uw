@@ -60,7 +60,7 @@ const line = d3.line()
 allLine.append("path")
     .datum(totalYr)
     .attr("d", line)
-    .attr("stroke", "steelblue")
+    .attr("stroke", "red")
     .attr("stroke-width", 2)
     .attr("fill", "none");
 
