@@ -20,7 +20,19 @@ const svg2_RENAME = d3.select("#lineChart2")
 
 
 // (If applicable) Tooltip element for interactivity
-// const tooltip = ...
+// --- INTERACTIVITY ---
+    // Tooltip
+    const tooltip = d3.select("body") // Create tooltip
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background", "rgba(0, 0, 0, 0.7)")
+        .style("color", "white")
+        .style("padding", "10px")
+        .style("border-radius", "5px")
+        .style("font-size", "12px");
+tooltip.style("visibility", "visible").text("Tooltip test").style("top", "100px").style("left", "100px");
 
 // 2.a: LOAD...
 d3.csv("SPDUseofForce.csv").then(data => {
@@ -60,7 +72,7 @@ const line = d3.line()
 allLine.append("path")
     .datum(totalYr)
     .attr("d", line)
-    .attr("stroke", "red")
+    .attr("stroke", "gray")
     .attr("stroke-width", 2)
     .attr("fill", "none");
 
@@ -100,25 +112,26 @@ allLine.append("text")
     .text("Number of Incidents");
 
     // 7.a: ADD INTERACTIVITY FOR CHART 1
-
-
-    // ==========================================
-    //         CHART 2 (if applicable)
-    // ==========================================
-
-    // 3.b: SET SCALES FOR CHART 2
-
-
-    // 4.b: PLOT DATA FOR CHART 2
-
-
-    // 5.b: ADD AXES FOR CHART
-
-
-    // 6.b: ADD LABELS FOR CHART 2
-
-
-    // 7.b: ADD INTERACTIVITY FOR CHART 2
-
+allLine.selectAll("circle")
+    .data(totalYr)
+    .enter()
+    .append("circle")
+    .attr("cx", d => xScale(d.year) + xScale.bandwidth() / 2)
+    .attr("cy", d => yScale(d.count))
+    .attr("r", 6)
+    .style("fill", "blue")
+    .style("opacity", 0.2)
+    .on("mouseover", function(event, d) {
+        tooltip.style("visibility", "visible")
+            .html(`<strong>Year:</strong> ${d.year}<br><strong>Incidents:</strong> ${d.count}`)
+            .style("top", (event.pageY + 10) + "px")
+            .style("left", (event.pageX + 10) + "px");
+        d3.select(this).style("opacity", 0.8);
+    })
+    .on("mouseout", function() {
+        tooltip.style("visibility", "hidden");
+        d3.select(this).style("opacity", 0.2);
+    });
 
 });
+
