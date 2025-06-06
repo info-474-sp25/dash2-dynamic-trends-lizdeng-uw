@@ -32,7 +32,7 @@ const svg2_RENAME = d3.select("#lineChart2")
         .style("padding", "10px")
         .style("border-radius", "5px")
         .style("font-size", "12px");
-tooltip.style("visibility", "visible").text("Tooltip test").style("top", "100px").style("left", "100px");
+
 
 // 2.a: LOAD...
 d3.csv("SPDUseofForce.csv").then(data => {
@@ -84,16 +84,6 @@ allLine.append("g")
 allLine.append("g")
     .call(d3.axisLeft(yScale));
 
-// 6.a: ADD LABELS FOR CHART 1
-// allLine.append("text")
-//     .attr("class", "title")
-//     .attr("x", width / 2)
-//     .attr("y", -margin.top / 2)
-//     .attr("text-anchor", "middle")
-//     .text("SPD Use of Force Incidents by Year")
-//     .style("font-size", "16px")
-//     .style("font-weight", "bold");
-
 // X-axis label
 allLine.append("text")
     .attr("class", "axis-label")
@@ -133,5 +123,55 @@ allLine.selectAll("circle")
         d3.select(this).style("opacity", 0.2);
     });
 
+    function linearRegression(data) {
+        const n = data.length;
+        const sumX = d3.sum(data, d => d.year);
+        const sumY = d3.sum(data, d => d.count);
+        const sumXY = d3.sum(data, d => d.year * d.count);
+        const sumX2 = d3.sum(data, d => d.year * d.year);
+
+        // Calculate slope (m) and intercept (b)
+        const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        const b = (sumY - m * sumX) / n;
+
+        // Generate points for the trendline
+        const trendlineData = data.map(d => ({
+            year: d.year,
+            count: m * d.year + b
+        }));
+
+        return trendlineData;
+    };
+
+     function drawTrendline(data) {
+        const trendlineData = linearRegression(data);
+
+        // Remove the previous trendline if it exists
+        allLine.selectAll(".trendline").remove();
+
+        // Add the trendline path
+        allLine.append("path")
+            .data([trendlineData])
+            .attr("class", "trendline")
+            .attr("d", d3.line()
+                .x(d => xScale(d.year) + xScale.bandwidth() / 2)
+                .y(d => yScale(d.count))
+            )
+            .attr("fill", "none")
+            .attr("stroke", "gray")
+            .attr("stroke-width", 2)
+            .attr("stroke-dasharray", "5,5");
+    }
+
+    //console.log(linearRegression(data))
+    const checkbox = d3.select("#trendline-toggle-useofforce");
+
+    checkbox.on("change", function() {
+        if (this.checked) {
+            drawTrendline(totalYr);
+        } else {
+            allLine.selectAll(".trendline").remove();
+        }
+    });
 });
 
